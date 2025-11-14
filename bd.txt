@@ -1,0 +1,106 @@
+CREATE DATABASE IF NOT EXISTS `db-inf-3at`;
+USE `db-inf-3at`;
+
+CREATE TABLE IF NOT EXISTS types (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    description VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Inserir tipos de usuário padrão
+INSERT INTO types (id, description) VALUES 
+(1, 'Administrador'),
+(2, 'Usuário Comum')
+ON DUPLICATE KEY UPDATE description = description;
+
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    idType INT,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
+    email VARCHAR(191) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    photo VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (idType) REFERENCES types(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS courts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    hours INT,
+    type VARCHAR(255),
+    price DECIMAL(10,2) NOT NULL,
+    image VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Inserir quadras de exemplo
+INSERT INTO courts (name, hours, type, price, image) VALUES 
+('Quadra de Futebol 1', 2, 'Futebol', 120.00, 'storage/images/quadraUm.png'),
+('Quadra de Vôlei 1', 2, 'Vôlei', 100.00, 'storage/images/quadraDois.jpg'),
+('Quadra de Basquete 1', 2, 'Basquete', 150.00, 'storage/images/quadraTres.jpg')
+ON DUPLICATE KEY UPDATE 
+    name = VALUES(name),
+    hours = VALUES(hours),
+    type = VALUES(type),
+    price = VALUES(price),
+    image = VALUES(image);
+
+CREATE TABLE IF NOT EXISTS hours (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    courtId INT NOT NULL,
+    startTime TIME NOT NULL,
+    endTime TIME NOT NULL,
+    available BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (courtId) REFERENCES courts(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(191) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS products_categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    idCategory INT,
+    name VARCHAR(255) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (idCategory) REFERENCES products_categories(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS faq_types (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    description VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS questions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    idType INT,
+    question TEXT NOT NULL,
+    answer TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (idType) REFERENCES faq_types(id) ON DELETE SET NULL
+);
+
